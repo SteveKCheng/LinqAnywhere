@@ -42,7 +42,7 @@ namespace LinqAnywhere
         public bool MatchesExpression(ParameterExpression subject, Expression expr)
         {
             // FIXME subject needs to be considered in the comparison
-            return ExpressionEqualityComparer.EqualsInternal(expr, ColumnExpression);
+            return new ExpressionEqualityComparer().Equals(expr, ColumnExpression);
         }
     }
 }
