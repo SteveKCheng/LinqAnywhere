@@ -66,7 +66,14 @@ namespace LinqAnywhere
         }
 
         /// <inheritdoc />
-        public void Reset() => origCursor.Reset();
+        public void Reset() 
+        {
+            if (origCursor == null)
+                throw new ObjectDisposedException(nameof(FilteredCursor));
+
+            origCursor.Reset();
+            hasIterationStarted = false;
+        }
 
         /// <inheritdoc />
         public void Dispose()
@@ -79,7 +86,7 @@ namespace LinqAnywhere
         }
 
         /// <inheritdoc />
-        public object Current { get => origCursor.Current; }
+        public object Current => origCursor.Current;
 
         /// <inheritdoc />
         public bool MoveNext()
