@@ -4,9 +4,15 @@ using System.Collections;
 namespace LinqAnywhere
 {
     /// <summary>
-    /// An enumerator for an abstract table that can reset to 
+    /// An enumerator for an abstract table that can set to 
     /// a position given by the values of indexed columns.
     /// </summary>
+    /// <remarks>
+    /// This interface extends the standard .NET IEnumerator
+    /// to allow seeking to a desired position.  It abstracts
+    /// the idea of looking up rows of a database table using its index.
+    /// Naturally, ICursor can be used to implement database queries.
+    /// </remarks>
     public interface ICursor : IEnumerator, IDisposable
     {
         /// <summary>
@@ -16,11 +22,18 @@ namespace LinqAnywhere
         /// the table index's ordering.  
         /// </summary>
         /// <remarks>
+        /// <para>
         /// <paramref name="following" /> set to false
         /// means the equivalent of the "lower bound"
         /// operation in the C++ STL; <paramref name="following" />
         /// set to true means the equivalent of the "upper bound"
         /// operation.
+        /// </para>
+        /// <para>
+        /// The row sought by SeekTo is available when SeekTo
+        /// returns true.  So SeekTo takes the place of the first
+        /// call to MoveNext in a standard IEnumerator.
+        /// </para>
         /// </remarks>
         /// <param name="columnOrdinal">The number of values 
         /// to take from the beginning of the array 
@@ -35,7 +48,8 @@ namespace LinqAnywhere
         /// index's ordering would not be violated.
         /// </param>
         /// <returns>Whether there is a row occurring at the cursor
-        /// after seeking.
+        /// after seeking.  So this return value has the same meaning
+        /// as that of MoveNext.
         /// </returns>
         bool SeekTo(int numColumns, object[] columnValue, bool following);
 
