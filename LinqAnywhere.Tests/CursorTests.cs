@@ -82,7 +82,7 @@ namespace LinqAnywhere.Tests
         }
     }
 
-    public class UnitTest1
+    public class CursorTests
     {
         [Fact]
         public void Test1()
