@@ -15,9 +15,7 @@ namespace LinqAnywhere.Tests
 
             var p1 = e1.Parameters[0];
             var p2 = e2.Parameters[0];
-            var comparer = new ExpressionEqualityComparer();
-            comparer.ParameterToUnify1 = p1;
-            comparer.ParameterToUnify2 = p2;
+            var comparer = new ExpressionEqualityComparer(p1, p2);
 
             Assert.Equal(e1, e2, comparer);
         }

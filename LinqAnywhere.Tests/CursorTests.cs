@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Xunit;
 
@@ -84,6 +85,18 @@ namespace LinqAnywhere.Tests
 
     public class CursorTests
     {
+        private static Interval<object> MakeInterval(object lowerBound, 
+                                                     object upperBound,
+                                                     IComparer comparer)
+        {
+            var interval = new Interval<object>();
+            if (lowerBound != null)
+                interval = interval.IntersectTypeErased(Interval.CreateLowerBounded(lowerBound, false), comparer);
+            if (upperBound != null)
+                interval = interval.IntersectTypeErased(Interval.CreateUpperBounded(upperBound, false), comparer);
+            return interval;
+        }
+
         [Fact]
         public void Test1()
         {
@@ -95,32 +108,22 @@ namespace LinqAnywhere.Tests
                 new IndexColumnMatch { 
                     ColumnOrdinal = 0,
                     Comparer = comparer,
-                    IsLowerBounded = true,
-                    IsUpperBounded = true,
-                    LowerBoundValue = 3,
-                    UpperBoundValue = 7,
+                    Interval = MakeInterval(3, 7, comparer),
                 },
                 new IndexColumnMatch { 
                     ColumnOrdinal = 1,
                     Comparer = comparer,
-                    IsLowerBounded = true,
-                    IsUpperBounded = true,
-                    LowerBoundValue = 1,
-                    UpperBoundValue = 8,
+                    Interval = MakeInterval(1, 8, comparer),
                 },
                 new IndexColumnMatch { 
                     ColumnOrdinal = 2,
                     Comparer = comparer,
-                    IsLowerBounded = true,
-                    LowerBoundValue = 9,
-                    UpperBoundValue = 9
+                    Interval = MakeInterval(9, null, comparer),
                 },
                 new IndexColumnMatch { 
                     ColumnOrdinal = 3,
                     Comparer = comparer,
-                    IsUpperBounded = true,
-                    LowerBoundValue = 0,
-                    UpperBoundValue = 2
+                    Interval = MakeInterval(null, 2, comparer),
                 },
             };
 
@@ -139,7 +142,11 @@ namespace LinqAnywhere.Tests
                     var thisValue = DigitsCursor.GetCurrentValueInteger(c);
                     // Console.WriteLine(thisValue);
                     for (i = 0; i < columns.Length; ++i)
-                        Assert.InRange(c[i], (int)columns[i].LowerBoundValue, (int)columns[i].UpperBoundValue);
+                    {
+                        var lowerBound = (int?)columns[i].Interval.LowerBound ?? 0;
+                        var upperBound = (int?)columns[i].Interval.UpperBound ?? 9;
+                        Assert.InRange(c[i], lowerBound, upperBound);
+                    }
                     
                     Assert.True(thisValue > lastValue);
                     lastValue = thisValue;
@@ -148,7 +155,11 @@ namespace LinqAnywhere.Tests
 
             int expectedCount = 1;
             for (i = 0; i < columns.Length; ++i)
-                expectedCount *= (int)columns[i].UpperBoundValue - (int)columns[i].LowerBoundValue + 1;
+            {
+                var lowerBound = (int?)columns[i].Interval.LowerBound ?? 0;
+                var upperBound = (int?)columns[i].Interval.UpperBound ?? 9;
+                expectedCount *= upperBound - lowerBound + 1;
+            }
                 
             for (; i < origCursor.NumColumns; ++i)
                 expectedCount *= 10;
