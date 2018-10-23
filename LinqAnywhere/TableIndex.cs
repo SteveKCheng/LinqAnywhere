@@ -69,7 +69,7 @@ namespace LinqAnywhere
         /// within this table index.  Ordinals range from zero
         /// to the number of columns minus one.
         /// </param>
-        public ColumnDescriptor GetTerm(int columnOrdinal)
+        public ColumnDescriptor GetColumn(int columnOrdinal)
             => columns[columnOrdinal];
 
         /// <summary>
@@ -77,23 +77,36 @@ namespace LinqAnywhere
         /// </summary>
         /// <param name="subject">Expression referring to a row of the table, used
         /// inside each term. </param>
-        /// <param name="terms">Expression which may be a predicate involving
-        /// a column of an index and a value to match.</param>
-        /// <returns></returns>
+        /// <param name="terms">Each element may be an expression that is a 
+        /// predicate involving a column of an index and a value to match.  If so, 
+        /// the reference to the Expression is erased from the array on return.
+        /// </param>
+        /// <returns>
+        /// Match information on each of the columns of this table index.
+        /// Any range critiera specified by the expressions in 
+        /// <paramref name="terms" /> are incorporated here.
+        /// </returns>
         public IndexColumnMatch[] ComputeIndexColumnMatches(ParameterExpression subject, 
                                                             Expression[] terms)
         {
-            var matchInfo = new IndexColumnMatch[terms.Length];
+            var matchInfo = new IndexColumnMatch[this.NumberOfColumns];
+            for (int j = 0; j < matchInfo.Length; ++j)
+            {
+                matchInfo[j] = new IndexColumnMatch {
+                    ColumnDescriptor = this.GetColumn(j)
+                };
+            }
 
             for (int i = 0; i < terms.Length; ++i)
             {
-                var term = terms[i];
-
-                for (int j = 0; j < this.NumberOfColumns; ++j)
+                for (int j = 0; j < matchInfo.Length; ++j)
                 {
-                    var column = this.GetTerm(j);
-                    bool matches = column.MatchesExpression(subject, term);
-                    matchInfo[i].ColumnOrdinal = matches ? j : -1;
+                    var hasMatched = matchInfo[j].MatchPredicate(subject, terms[i]);
+                    if (hasMatched)
+                    {
+                        terms[i] = null;
+                        break;
+                    }
                 }
             }
 

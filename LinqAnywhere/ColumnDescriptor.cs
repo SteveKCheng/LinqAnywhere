@@ -116,7 +116,7 @@ namespace LinqAnywhere
         /// <param name="expr">The LINQ expression to test. </param>
         /// <returns>True if the LINQ expression exactly matches this column,
         /// otherwise false. </returns>
-        public bool MatchesExpression(ParameterExpression subject, Expression expr)
+        public bool MatchesExpression(Expression subject, Expression expr)
         {
             // FIXME subject needs to be considered in the comparison
             return new ExpressionEqualityComparer().Equals(expr, ColumnExpression);
