@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Collections.ObjectModel;
+using System;
 
 namespace LinqAnywhere
 {
@@ -29,16 +30,34 @@ namespace LinqAnywhere
         }
 
         /// <summary>
-        /// An expression to unify with ParameterToUnify2 if it appears.
-        /// Typically represents a parameter in the LINQ expression.
+        /// Prepare to compare for structural equality, while unifying
+        /// two expressions.
         /// </summary>
-        public Expression ParameterToUnify1 { get; set; }
+        /// <param name="unify1">Expression to unify with <paramref name="unify2" />. </param>
+        /// <param name="unify2">Expression to unify with <paramref name="unify1" />. </param>
+        public ExpressionEqualityComparer(Expression unify1, Expression unify2)
+        {
+            if ((unify1 == null) != (unify2 == null))
+                throw new ArgumentNullException("Two expressions to unify must be both null or both non-null", nameof(unify1));
+
+            if (unify1 == unify2)
+                unify1 = unify2 = null;
+
+            this.Unify1 = unify1;
+            this.Unify2 = unify2;
+        }
 
         /// <summary>
-        /// An expression to unify with ParameterToUnify1 if it appears.
+        /// An expression to unify with Unify2 if it appears.
         /// Typically represents a parameter in the LINQ expression.
         /// </summary>
-        public Expression ParameterToUnify2 { get; set; }
+        public readonly Expression Unify1;
+
+        /// <summary>
+        /// An expression to unify with Unify1 if it appears.
+        /// Typically represents a parameter in the LINQ expression.
+        /// </summary>
+        public readonly Expression Unify2;
 
         /// <summary>
         /// Compare two LINQ expressions for structural equality.
@@ -54,8 +73,8 @@ namespace LinqAnywhere
             if (x == null)
                 return true;
 
-            if ((x == ParameterToUnify1 || x == ParameterToUnify2) &&
-                (y == ParameterToUnify1 || y == ParameterToUnify2))
+            if ((x == Unify1 || x == Unify2) &&
+                (y == Unify1 || y == Unify2))
                 return true;
 
             var nodeType = x.NodeType;

@@ -118,8 +118,8 @@ namespace LinqAnywhere
         /// otherwise false. </returns>
         public bool MatchesExpression(Expression subject, Expression expr)
         {
-            // FIXME subject needs to be considered in the comparison
-            return new ExpressionEqualityComparer().Equals(expr, ColumnExpression);
+            return new ExpressionEqualityComparer(subject, RowExpression)
+                            .Equals(expr, ColumnExpression);
         }
     }
 }
