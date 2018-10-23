@@ -37,7 +37,7 @@ namespace LinqAnywhere
         /// <summary>
         /// Ranged criteria for the columns.
         /// </summary>
-        private IndexColumnMatch[] columnMatches;
+        private IndexColumnMatch[] criteria;
 
         /// <summary>
         /// The values of the columns for the current row.
@@ -58,11 +58,34 @@ namespace LinqAnywhere
         /// </remarks>
         private bool hasIterationStarted;
 
-        public FilteredCursor(ICursor origCursor, IndexColumnMatch[] columnMatches)
+        /// <summary>
+        /// Number of columns to use in the criteria array.
+        /// </summary>
+        /// <remarks>
+        /// The criteria array may be allocated with extra elements
+        /// beyond the logical number of criteria being considered.
+        /// This number must be non-negative and not greater than
+        /// the number of elements in the criteria array.
+        /// </remarks>
+        private int numCriteria;
+
+        /// <summary>
+        /// Construct a cursor which filters on the given criteria.
+        /// </summary>
+        /// <param name="origCursor">Original cursor for the abstract table. </param>
+        /// <param name="criteria">Array of criteria for a prefix sub-sequence of
+        /// columns on the table. </param>
+        /// <param name="numCriteria">The number of columns to index on. </param>
+        public FilteredCursor(ICursor origCursor, IndexColumnMatch[] criteria, int numCriteria)
         {
             this.origCursor = origCursor ?? throw new ArgumentNullException(nameof(origCursor));
-            this.columnMatches = columnMatches ?? throw new ArgumentException(nameof(columnMatches));
-            this.currentKey = new object[columnMatches.Length];
+            this.criteria = criteria ?? throw new ArgumentException(nameof(criteria));
+
+            if (numCriteria < 0 || numCriteria > criteria.Length)
+                throw new ArgumentOutOfRangeException(nameof(numCriteria));
+
+            this.currentKey = new object[numCriteria];
+            this.numCriteria = numCriteria;
         }
 
         /// <inheritdoc />
@@ -94,7 +117,7 @@ namespace LinqAnywhere
             if (origCursor == null)
                 throw new ObjectDisposedException(nameof(FilteredCursor));
 
-            if (columnMatches.Length == 0)
+            if (numCriteria == 0)
                 return origCursor.MoveNext();
 
             return MoveNextFiltered();
@@ -144,8 +167,8 @@ namespace LinqAnywhere
                 if (!origCursor.MoveNext())
                     return false;
 
-                columnOrdinal = columnMatches.Length - 1;
-                column = columnMatches[columnOrdinal];
+                columnOrdinal = numCriteria - 1;
+                column = criteria[columnOrdinal];
                 goto CheckForRoll;
             }
 
@@ -154,7 +177,7 @@ namespace LinqAnywhere
             columnOrdinal = 0;
 
         StartNextColumn:
-            column = columnMatches[columnOrdinal];
+            column = criteria[columnOrdinal];
 
             if (!column.Interval.HasLowerBound)
                 goto UpdateThisColumn;
@@ -179,11 +202,11 @@ namespace LinqAnywhere
                 var oldValue = currentKey[i];
                 currentKey[i] = newValue;
 
-                if (columnMatches[i].Comparer.Compare(newValue, oldValue) != 0)
+                if (criteria[i].Comparer.Compare(newValue, oldValue) != 0)
                 {
                     // Column i has rolled over.  Go back to scanning that column.
                     columnOrdinal = i;
-                    column = columnMatches[i];
+                    column = criteria[i];
                     goto CheckThisColumn;
                 }
             }
@@ -210,13 +233,13 @@ namespace LinqAnywhere
                                            true))
                         return false;
 
-                    column = columnMatches[--columnOrdinal];
+                    column = criteria[--columnOrdinal];
                     goto CheckForRoll;
                 }
             }
 
             // Proceed to scan on the next column, if any.
-            if (++columnOrdinal != columnMatches.Length)
+            if (++columnOrdinal != numCriteria)
                 goto StartNextColumn;
             
             // If there are no more columns, that means the underlying cursor

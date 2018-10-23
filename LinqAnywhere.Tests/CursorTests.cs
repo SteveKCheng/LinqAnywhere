@@ -130,7 +130,7 @@ namespace LinqAnywhere.Tests
             int count = 0;
             int i;
 
-            using (var filteredCursor = new FilteredCursor(origCursor, columns))
+            using (var filteredCursor = new FilteredCursor(origCursor, columns, columns.Length))
             {
                 int lastValue = -1;
 
