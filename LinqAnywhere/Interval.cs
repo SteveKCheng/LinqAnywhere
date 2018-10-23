@@ -7,6 +7,10 @@ namespace LinqAnywhere
     /// Represents an open, half-open, or closed interval
     /// of elements with a total ordering.
     /// </summary>
+    /// <remarks>
+    /// The default constructor creates the interval which
+    /// contains all values.
+    /// </remarks>
     public struct Interval<T>
     {
         /// <summary>
@@ -52,6 +56,11 @@ namespace LinqAnywhere
         public T UpperBound { get; private set; }
 
         /// <summary>
+        /// Whether this interval has been explicitly computed to be empty.
+        /// </summary>
+        public bool IsEmpty { get; private set; }
+
+        /// <summary>
         /// Create an interval that is bounded below but not bounded above.
         /// </summary>
         public static Interval<T> CreateLowerBounded(T value, bool isExclusive)
@@ -83,6 +92,11 @@ namespace LinqAnywhere
         public Interval<T> Intersect<TComparer>(Interval<T> other, TComparer comparer)
             where TComparer : IComparer<T>
         {
+            if (this.IsEmpty)
+                return this;
+            if (other.IsEmpty)
+                return other;
+
             var result = this;
 
             if (other.HasLowerBound)
@@ -122,6 +136,24 @@ namespace LinqAnywhere
                 {
                     result.UpperBound = other.UpperBound;
                     result.IsUpperBoundExclusive = other.IsUpperBoundExclusive;
+                }
+            }
+
+            // Check if the intersection is obviously empty
+            if (result.HasLowerBound && result.HasUpperBound)
+            {
+                var c = comparer.Compare(result.LowerBound, result.UpperBound);
+
+                if (c > 0 || (c == 0 && (result.IsLowerBoundExclusive 
+                                     ||  result.IsUpperBoundExclusive)))
+                {
+                    result.HasLowerBound = 
+                    result.HasUpperBound = false;
+                    result.IsLowerBoundExclusive =
+                    result.IsUpperBoundExclusive = true;
+                    result.LowerBound =
+                    result.UpperBound = default(T);
+                    result.IsEmpty = true;
                 }
             }
 
