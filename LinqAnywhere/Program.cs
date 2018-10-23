@@ -106,46 +106,6 @@ namespace LinqAnywhere
 
     }
 
-
-    public struct IndexMatchInfo
-    {
-        public static bool Match(ParameterExpression subject, Expression[] terms, 
-                                 TableIndex tableIndex)
-        {
-            var matchInfo = tableIndex.ComputeIndexColumnMatches(subject, terms);
-
-            Array.Sort(matchInfo, terms);
-
-            var lastColumnOrdinal = matchInfo[terms.Length-1].ColumnOrdinal;
-            if (lastColumnOrdinal < 0)
-                return false;
-
-            int termOrdinal = terms.Length;
-            while (termOrdinal > 0)
-            {
-                var columnOrdinal = matchInfo[termOrdinal-1].ColumnOrdinal;
-                if (columnOrdinal < 0)
-                    break;
-                if (columnOrdinal < lastColumnOrdinal-1)
-                    return false;
-                lastColumnOrdinal = columnOrdinal;
-                termOrdinal--;
-            }
-
-            return lastColumnOrdinal == 0;
-
-            // Check that each term term[termIndex] ... 
-            // have effectively equality predicates
-
-            // Actually this is too strict.  Think about the 2D case
-            // where we are restricting to a box { x <= a, y <= b }
-            // This cannot be completed as a single index scan,
-            // but we can still scan items sequentially in a double loop
-            // Do we generate instructions for the loop (of "arbitrary" arity)
-            // similar to SQLite's VM language?
-        }
-    }
-
     public class AbstractQueryProvider : IQueryProvider
     {
         public IQueryable CreateQuery(Expression expression)

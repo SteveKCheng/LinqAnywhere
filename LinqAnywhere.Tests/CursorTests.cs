@@ -106,22 +106,18 @@ namespace LinqAnywhere.Tests
 
             var columns = new IndexColumnMatch[4] {
                 new IndexColumnMatch { 
-                    ColumnOrdinal = 0,
                     Comparer = comparer,
                     Interval = MakeInterval(3, 7, comparer),
                 },
                 new IndexColumnMatch { 
-                    ColumnOrdinal = 1,
                     Comparer = comparer,
                     Interval = MakeInterval(1, 8, comparer),
                 },
                 new IndexColumnMatch { 
-                    ColumnOrdinal = 2,
                     Comparer = comparer,
                     Interval = MakeInterval(9, null, comparer),
                 },
                 new IndexColumnMatch { 
-                    ColumnOrdinal = 3,
                     Comparer = comparer,
                     Interval = MakeInterval(null, 2, comparer),
                 },

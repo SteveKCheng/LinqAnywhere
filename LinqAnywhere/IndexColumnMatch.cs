@@ -7,13 +7,8 @@ namespace LinqAnywhere
     /// Describes how one column within an index has been matched
     /// in some query.
     /// </summary>
-    public class IndexColumnMatch : IComparable<IndexColumnMatch>
+    public class IndexColumnMatch
     {
-        /// <summary>
-        /// The integer index of the column within the table index.
-        /// </summary>
-        public int ColumnOrdinal;
-
         /// <summary>
         /// For comparing values for this column.
         /// </summary>
@@ -25,12 +20,5 @@ namespace LinqAnywhere
         public Interval<object> Interval;
 
         public ColumnDescriptor ColumnDescriptor;
-
-        /// <summary>
-        /// Orders instances by ordinal, used when matching queries against
-        /// available indices.
-        /// </summary>
-        int IComparable<IndexColumnMatch>.CompareTo(IndexColumnMatch other)
-            => this.ColumnOrdinal.CompareTo(other.ColumnOrdinal);
     }
 }
