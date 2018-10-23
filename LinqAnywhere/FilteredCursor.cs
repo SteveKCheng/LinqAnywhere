@@ -37,7 +37,7 @@ namespace LinqAnywhere
         /// <summary>
         /// Ranged criteria for the columns.
         /// </summary>
-        private IndexColumnMatch[] criteria;
+        private readonly IndexColumnMatch[] criteria;
 
         /// <summary>
         /// The values of the columns for the current row.
@@ -46,7 +46,7 @@ namespace LinqAnywhere
         /// This member is a state variable updated by 
         /// MoveNextFiltered.
         /// </remarks>
-        private object[] currentKey;
+        private readonly object[] currentKey;
 
         /// <summary>
         /// Whether MoveNextFiltered is continuing the iteration
@@ -67,7 +67,7 @@ namespace LinqAnywhere
         /// This number must be non-negative and not greater than
         /// the number of elements in the criteria array.
         /// </remarks>
-        private int numCriteria;
+        private readonly int numCriteria;
 
         /// <summary>
         /// Construct a cursor which filters on the given criteria.
@@ -104,8 +104,6 @@ namespace LinqAnywhere
             var c = origCursor;
             origCursor = null;
             c?.Dispose();
-
-            currentKey = null;
         }
 
         /// <inheritdoc />
