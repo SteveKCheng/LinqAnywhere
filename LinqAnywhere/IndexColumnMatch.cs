@@ -20,34 +20,11 @@ namespace LinqAnywhere
         public IComparer Comparer;
 
         /// <summary>
-        /// Whether the column value is to be bounded below.
+        /// The range of values on the column to match.
         /// </summary>
-        public bool IsLowerBounded;
+        public Interval<object> Interval;
 
-        /// <summary>
-        /// Whether the lower bound is exclusive of the target value.
-        /// </summary>
-        public bool IsLowerBoundExclusive;
-
-        /// <summary>
-        /// Whether the column value is to be bounded above.
-        /// </summary>
-        public bool IsUpperBounded;
-
-        /// <summary>
-        /// Whether the upper bound is exclusive of the target value.
-        /// </summary>
-        public bool IsUpperBoundExclusive;
-
-        /// <summary>
-        /// The desired lower bound on the column value.
-        /// </summary>
-        public object LowerBoundValue;
-
-        /// <summary>
-        /// The desired lower bound on the column value.
-        /// </summary>
-        public object UpperBoundValue;
+        public ColumnDescriptor ColumnDescriptor;
 
         /// <summary>
         /// Orders instances by ordinal, used when matching queries against

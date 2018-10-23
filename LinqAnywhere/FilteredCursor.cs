@@ -156,16 +156,16 @@ namespace LinqAnywhere
         StartNextColumn:
             column = columnMatches[columnOrdinal];
 
-            if (!column.IsLowerBounded)
+            if (!column.Interval.HasLowerBound)
                 goto UpdateThisColumn;
 
             // When restarting the iteration on this column,
             // we need to seek to the lower bound value first, if
             // there is one.  
-            currentKey[columnOrdinal] = column.LowerBoundValue;
+            currentKey[columnOrdinal] = column.Interval.LowerBound;
             if (!origCursor.SeekTo(columnOrdinal + 1,
                                    currentKey,
-                                   column.IsLowerBoundExclusive))
+                                   column.Interval.IsLowerBoundExclusive))
                 return false;
 
         CheckForRoll:
@@ -195,15 +195,15 @@ namespace LinqAnywhere
 
         CheckThisColumn:
             // Check upper bound for this column.
-            if (column.IsUpperBounded)
+            if (column.Interval.HasUpperBound)
             {
                 var compareResult = column.Comparer.Compare(currentKey[columnOrdinal], 
-                                                            column.UpperBoundValue);
+                                                            column.Interval.UpperBound);
 
                 // When this current value for this column exceeds the 
                 // desired upper bound, we have to manually roll over
                 // the immediately preceding column.
-                if (compareResult >= (column.IsUpperBoundExclusive ? 0 : 1))
+                if (compareResult >= (column.Interval.IsUpperBoundExclusive ? 0 : 1))
                 {
                     if (!origCursor.SeekTo(columnOrdinal, 
                                            currentKey,
