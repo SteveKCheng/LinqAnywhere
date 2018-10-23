@@ -129,7 +129,7 @@ namespace LinqAnywhere
                                           Expression subject,
                                           Expression term)
         {
-            var maybeComparison = DecodeColumnComparison(column.ColumnDescriptor,
+            var maybeComparison = DecodeColumnComparison(column.Column,
                                                          subject,
                                                          term);
             if (maybeComparison == null)
@@ -142,7 +142,7 @@ namespace LinqAnywhere
 
             var operand = ((ConstantExpression)comparison.Operand).Value;
 
-            var totalOrder = column.ColumnDescriptor.TotalOrder;
+            var totalOrder = column.Column.TotalOrder;
 
             var interval = comparison.IsEquality 
                                 ? Interval.CreateSinglePoint(operand)

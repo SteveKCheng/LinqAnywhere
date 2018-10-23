@@ -7,18 +7,21 @@ namespace LinqAnywhere
     /// Describes how one column within an index has been matched
     /// in some query.
     /// </summary>
-    public class IndexColumnMatch
+    public struct IndexColumnMatch
     {
-        /// <summary>
-        /// For comparing values for this column.
-        /// </summary>
-        public IComparer Comparer;
-
         /// <summary>
         /// The range of values on the column to match.
         /// </summary>
         public Interval<object> Interval;
 
-        public ColumnDescriptor ColumnDescriptor;
+        /// <summary>
+        /// Metadata for the column.
+        /// </summary>
+        public ColumnDescriptor Column;
+
+        /// <summary>
+        /// For comparing values for this column.
+        /// </summary>
+        public IComparer Comparer => Column.TotalOrder;
     }
 }

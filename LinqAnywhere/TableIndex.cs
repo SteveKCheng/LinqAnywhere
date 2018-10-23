@@ -91,11 +91,7 @@ namespace LinqAnywhere
         {
             var matchInfo = new IndexColumnMatch[this.NumberOfColumns];
             for (int j = 0; j < matchInfo.Length; ++j)
-            {
-                matchInfo[j] = new IndexColumnMatch {
-                    ColumnDescriptor = this.GetColumn(j)
-                };
-            }
+                matchInfo[j].Column = this.GetColumn(j);
 
             for (int i = 0; i < terms.Length; ++i)
             {

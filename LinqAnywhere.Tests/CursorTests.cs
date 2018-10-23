@@ -103,22 +103,23 @@ namespace LinqAnywhere.Tests
             var origCursor = new DigitsCursor(5);
 
             var comparer = Comparer<int>.Default;
+            var columnDescriptor = new ColumnDescriptor(null, null, comparer, true);
 
             var columns = new IndexColumnMatch[4] {
                 new IndexColumnMatch { 
-                    Comparer = comparer,
+                    Column = columnDescriptor,
                     Interval = MakeInterval(3, 7, comparer),
                 },
                 new IndexColumnMatch { 
-                    Comparer = comparer,
+                    Column = columnDescriptor,
                     Interval = MakeInterval(1, 8, comparer),
                 },
                 new IndexColumnMatch { 
-                    Comparer = comparer,
+                    Column = columnDescriptor,
                     Interval = MakeInterval(9, null, comparer),
                 },
                 new IndexColumnMatch { 
-                    Comparer = comparer,
+                    Column = columnDescriptor,
                     Interval = MakeInterval(null, 2, comparer),
                 },
             };
