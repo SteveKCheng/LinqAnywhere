@@ -83,6 +83,18 @@ namespace LinqAnywhere
             };
 
         /// <summary>
+        /// Create an interval that consists only of a single point.
+        /// </summary>
+        public static Interval<T> CreateSinglePoint(T value)
+            => new Interval<T>
+            {
+                HasLowerBound = true,
+                HasUpperBound = true,
+                LowerBound = value,
+                UpperBound = value
+            };
+
+        /// <summary>
         /// Intersect two intervals.
         /// </summary>
         /// <param name="other">The other interval to intersect with. </param>
@@ -165,7 +177,7 @@ namespace LinqAnywhere
     /// Holds extension methods to work with Intervals where the 
     /// values are stored type-erased.
     /// </summary>
-    public static class ObjectInterval
+    public static class Interval
     {
         /// <summary>
         /// Converts a non-generic IComparer to IComparer&lt;object&gt;.
@@ -184,15 +196,54 @@ namespace LinqAnywhere
         }
 
         /// <summary>
-        /// Intersect two intervals.
+        /// Intersect two intervals where the values have been type-erased.
         /// </summary>
         /// <param name="other">The other interval to intersect with. </param>
         /// <param name="comparer">Defines the total ordering. </param>
         /// <returns>The interval that is the intersection of this 
         /// and <paramref name="other" />. </returns>
-        public static Interval<object> Intersect(this Interval<object> self, 
-                                                 Interval<object> other, 
-                                                 IComparer comparer)
+        public static Interval<object> IntersectTypeErased(this Interval<object> self, 
+                                                           Interval<object> other, 
+                                                           IComparer comparer)
             => self.Intersect(other, new BoxingComparer(comparer));
+
+        /// <summary>
+        /// Create an interval that is bounded below but not bounded above.
+        /// </summary>
+        /// <remarks>
+        /// This function is the same as Interval&lt;T&gt;.CreateLowerBounded but allows 
+        /// C# code to deduce the generic parameter.
+        /// </remarks>
+        public static Interval<T> CreateLowerBounded<T>(T value, bool isExclusive)
+            => Interval<T>.CreateLowerBounded(value, isExclusive);
+
+        /// <summary>
+        /// Create an interval that is bounded above but not bounded below.
+        /// </summary>
+        /// <remarks>
+        /// This function is the same as Interval&lt;T&gt;.CreateUpperBounded but allows 
+        /// C# code to deduce the generic parameter.
+        /// </remarks>
+        public static Interval<T> CreateUpperBounded<T>(T value, bool isExclusive)
+            => Interval<T>.CreateUpperBounded(value, isExclusive);
+
+        /// <summary>
+        /// Create an interval that consists only of a single point.
+        /// </summary>
+        /// <remarks>
+        /// This function is the same as Interval&lt;T&gt;.CreateSinglePoint but allows 
+        /// C# code to deduce the generic parameter.
+        /// </remarks>
+        public static Interval<T> CreateSinglePoint<T>(T value)
+            => Interval<T>.CreateSinglePoint(value);
+
+        /// <summary>
+        /// Create an interval that is bounded either above or below.
+        /// </summary>
+        public static Interval<T> CreateOneSidedBound<T>(T value, 
+                                                         bool isExclusive,
+                                                         bool isUpperBound)
+            => isUpperBound ? Interval<T>.CreateUpperBounded(value, isExclusive)
+                            : Interval<T>.CreateLowerBounded(value, isExclusive);
     }
 }
