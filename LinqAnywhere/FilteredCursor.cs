@@ -157,8 +157,7 @@ namespace LinqAnywhere
         /// has exhausted all the filtered rows. </returns>
         private bool MoveNextFiltered()
         {
-            int columnOrdinal;          // Index of column we are working on.
-            IndexColumnMatch column;    // = columnMatches[columnOrdinal]
+            int ordinal;          // Index of column we are working on.
 
             // Resuming the state machine from the last time it emitted a row.
             // We are at the last column, and we can try to emit the next row.
@@ -167,35 +166,32 @@ namespace LinqAnywhere
                 if (!origCursor.MoveNext())
                     return false;
 
-                columnOrdinal = numCriteria - 1;
-                column = criteria[columnOrdinal];
+                ordinal = numCriteria - 1;
                 goto CheckForRoll;
             }
 
             // Otherwise, starting the state machine from the very beginning.
             hasIterationStarted = true;
-            columnOrdinal = 0;
+            ordinal = 0;
 
         StartNextColumn:
-            column = criteria[columnOrdinal];
-
-            if (!column.Interval.HasLowerBound)
+            if (!criteria[ordinal].Interval.HasLowerBound)
                 goto UpdateThisColumn;
 
             // When restarting the iteration on this column,
             // we need to seek to the lower bound value first, if
             // there is one.  
-            currentKey[columnOrdinal] = column.Interval.LowerBound;
-            if (!origCursor.SeekTo(columnOrdinal + 1,
+            currentKey[ordinal] = criteria[ordinal].Interval.LowerBound;
+            if (!origCursor.SeekTo(ordinal + 1,
                                    currentKey,
-                                   column.Interval.IsLowerBoundExclusive))
+                                   criteria[ordinal].Interval.IsLowerBoundExclusive))
                 return false;
 
         CheckForRoll:
             // If the underlying cursor has been moved in any way, check if the values
             // of preceding columns have rolled over.  If so, we need to restart looping
             // from the first column that rolled over, in order to check bounds.
-            for (int i = 0; i < columnOrdinal; ++i)
+            for (int i = 0; i < ordinal; ++i)
             {
                 // Update cache the current key for preceding columns.
                 var newValue = origCursor.GetColumnValue(i);
@@ -205,8 +201,7 @@ namespace LinqAnywhere
                 if (criteria[i].Comparer.Compare(newValue, oldValue) != 0)
                 {
                     // Column i has rolled over.  Go back to scanning that column.
-                    columnOrdinal = i;
-                    column = criteria[i];
+                    ordinal = i;
                     goto CheckThisColumn;
                 }
             }
@@ -214,32 +209,31 @@ namespace LinqAnywhere
         UpdateThisColumn:
             // Update cache of the current key for this column,
             // when preceding columns are not rolling over.
-            currentKey[columnOrdinal] = origCursor.GetColumnValue(columnOrdinal);
+            currentKey[ordinal] = origCursor.GetColumnValue(ordinal);
 
         CheckThisColumn:
             // Check upper bound for this column.
-            if (column.Interval.HasUpperBound)
+            if (criteria[ordinal].Interval.HasUpperBound)
             {
-                var compareResult = column.Comparer.Compare(currentKey[columnOrdinal], 
-                                                            column.Interval.UpperBound);
+                var compareResult = criteria[ordinal].Comparer.Compare(
+                                        currentKey[ordinal], 
+                                        criteria[ordinal].Interval.UpperBound);
 
                 // When this current value for this column exceeds the 
                 // desired upper bound, we have to manually roll over
                 // the immediately preceding column.
-                if (compareResult >= (column.Interval.IsUpperBoundExclusive ? 0 : 1))
+                if (compareResult >= (criteria[ordinal].Interval.IsUpperBoundExclusive ? 0 : 1))
                 {
-                    if (!origCursor.SeekTo(columnOrdinal, 
+                    if (!origCursor.SeekTo(ordinal--, 
                                            currentKey,
                                            true))
                         return false;
-
-                    column = criteria[--columnOrdinal];
                     goto CheckForRoll;
                 }
             }
 
             // Proceed to scan on the next column, if any.
-            if (++columnOrdinal != numCriteria)
+            if (++ordinal != numCriteria)
                 goto StartNextColumn;
             
             // If there are no more columns, that means the underlying cursor
